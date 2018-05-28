@@ -8,6 +8,7 @@
 
 
 using namespace cv;
+Scamp * scamp_ptr = NULL;
 
 Scamp::Scamp(const Sim *simulator) :
         A(cuda::GpuMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
@@ -72,55 +73,71 @@ const cuda::GpuMat &Scamp::digital(dreg_t a) const {
 
 void Scamp::perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r3) const {
     switch(op) {
-        case RPIX:
+        case RPIX: {
             if (!this->sim_ptr) {
                 std::cerr << "[Error] Simulator instance not referenced" << std::endl;
             }
             Mat in_frame = sim_ptr->get_frame();
+            cvtColor(in_frame, in_frame, CV_BGR2GRAY);
+            int width = in_frame.cols;
+            int height = in_frame.rows;
+            Mat cropFrame = in_frame(Rect((width-height)/2, 0, height-1, height-1));
             cuda::GpuMat work_frame;
-            cuda::cvtColor(in_frame, work_frame, COLOR_BGR2GRAY);
-            cuda::resize(work_frame, analog(r1), cvSize(SCAMP_WIDTH, SCAMP_HEIGHT));
-        case ADD:
+            work_frame.upload(cropFrame);
+            double factor = SCAMP_HEIGHT/work_frame.cols;
+            cuda::resize(work_frame, analog(r1), cvSize(SCAMP_WIDTH, SCAMP_HEIGHT), factor, factor);
+            break;
+        }
+        case ADD: {
             cuda::add(analog(r2), analog(r3), analog(r1), FLAG);
-            return;
-        case SUB:
+            break;
+        }
+        case SUB: {
             cuda::subtract(analog(r2), analog(r3), analog(r1), FLAG);
-            return;
-        case MOV:
+            break;
+        }
+        case MOV: {
             analog(r2).copyTo(analog(r1));
-            return;
-        default:
+            break;
+        }
+        default: {
             std::cerr << "Opcode " << op << " not implemented" << std::endl;
-            return;
+            break;
+        }
     }
 }
 
 
 void Scamp::perform_operation_digital(opcode_t op, dreg_t r1, dreg_t r2, dreg_t r3) const {
     switch(op) {
-        default:
+        default: {
             std::cerr << "Opcode " << op << " not implemented" << std::endl;
-            return;
+            break;
+        }
     }
 }
 
 
 void Scamp::perform_operation_analog_io(opcode_t op, areg_t r, int a) const {
     switch(op) {
-        case IN:
+        case IN: {
             cuda::GpuMat c(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S, a);
             c.copyTo(analog(r));
-        default:
+            break;
+        }
+        default: {
             std::cerr << "Opcode " << op << " not implemented" << std::endl;
-            return;
+            break;
+        }
     }
 }
 
 void Scamp::perform_operation_digital_io(opcode_t op, dreg_t r, int a, int b, int c, int d) const {
     switch(op) {
-        default:
+        default: {
             std::cerr << "Opcode " << op << " not implemented" << std::endl;
             return;
+        }
     }
 }
 

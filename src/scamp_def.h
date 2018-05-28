@@ -30,31 +30,31 @@ namespace SCAMP {
     } opcode_t;
 
     typedef enum AREG{
-        A,
-        B,
-        C,
-        D,
-        E,
-        F,
-        NEWS,
+        A = 1,
+        B = 2,
+        C = 3,
+        D = 4,
+        E = 5,
+        F = 6,
+        NEWS = 7,
     } areg_t ;
 
 
     typedef enum DREG{
-        R0,
-        R1,
-        R2,
-        R3,
-        R4,
-        R5,
-        R6,
-        R7,
-        R8,
-        R9,
-        R10,
-        R11,
-        R12,
-        FLAG
+        R0 = 101,
+        R1 = 102,
+        R2 = 103,
+        R3 = 104,
+        R4 = 105,
+        R5 = 106,
+        R6 = 107,
+        R7 = 108,
+        R8 = 109,
+        R9 = 110,
+        R10 = 111,
+        R11 = 112,
+        R12 = 113,
+        FLAG = 114
     } dreg_t;
 }
 

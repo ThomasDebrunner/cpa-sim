@@ -11,10 +11,6 @@
 using namespace SCAMP;
 
 
-void *io_buffer_usb;
-void *io_buffer_spi;
-volatile int readout_mode = 0;
-
 
 void shear_x(float lambda) {
 	d_select_pattern(R5, 127, 0, 0, 255);   // single line in middle
@@ -222,6 +218,9 @@ int main(){
     scamp.make_global();
 
     simulation.source_camera();
+
+    simulation.add_window(scamp.analog(A));
+    simulation.start_ui();
 
 	while (1) {
 		simulation.acquire_frame();
