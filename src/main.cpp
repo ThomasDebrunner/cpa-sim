@@ -233,16 +233,16 @@ int main(){
 		mov(B, A);
 		_e
 
-		float scale = i_scale / 100.;
-		scale_x(scale);
-		scale_y(scale);
-
-		float angle = 0.25*3.15*(i_angle/100.);
-		float alpha = -tan(angle/2.);
-		float beta = sin(angle);
-		shear_x(alpha);
-		shear_y(beta);
-		shear_x(alpha);
+//		float scale = i_scale / 100.;
+//		scale_x(scale);
+//		scale_y(scale);
+//
+//		float angle = 0.25*3.15*(i_angle/100.);
+//		float alpha = -tan(angle/2.);
+//		float beta = sin(angle);
+//		shear_x(alpha);
+//		shear_y(beta);
+//		shear_x(alpha);
 
 
 	}

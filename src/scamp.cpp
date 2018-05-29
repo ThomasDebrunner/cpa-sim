@@ -100,6 +100,18 @@ void Scamp::perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r
             analog(r2).copyTo(analog(r1));
             break;
         }
+        case NORTH: {
+            break;
+        }
+        case EAST: {
+            break;
+        }
+        case SOUTH: {
+            break;
+        }
+        case WEST: {
+            break;
+        }
         default: {
             std::cerr << "Opcode " << op << " not implemented" << std::endl;
             break;
