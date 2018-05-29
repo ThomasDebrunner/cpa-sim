@@ -151,8 +151,8 @@ inline void in(areg_t target, dac_t value) {
     scamp_ptr->perform_operation_analog_io(IN, target, value);
 }
 
-inline void load(dreg_t target, bool value) {
-    scamp_ptr->perform_operation_digital_io(IN, target, value, (dreg_t)0, (dreg_t)0, (dreg_t)0);
+inline void d_load(dreg_t target, bool value) {
+    scamp_ptr->perform_operation_digital_io(IN, target, value?255:0, (dreg_t)0, (dreg_t)0, (dreg_t)0);
 }
 
 

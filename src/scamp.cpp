@@ -234,7 +234,7 @@ void Scamp::perform_operation_analog_io(opcode_t op, areg_t r, int a) const {
     switch(op) {
         case IN: {
             UMat c(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S, a);
-            c.copyTo(analog(r));
+            c.copyTo(analog(r), FLAG);
             break;
         }
         default: {
@@ -246,6 +246,11 @@ void Scamp::perform_operation_analog_io(opcode_t op, areg_t r, int a) const {
 
 void Scamp::perform_operation_digital_io(opcode_t op, dreg_t r, int a, int b, int c, int d) const {
     switch(op) {
+        case IN: {
+            UMat temp(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U, a);
+            temp.copyTo(digital(r), FLAG);
+            break;
+        }
         case SELECT_PATTERN: {
             auto row_mask = ~c;
             auto col_mask = ~d;
