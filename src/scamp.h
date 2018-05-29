@@ -29,6 +29,8 @@ private:
     const UMat F;
     const UMat NEWS;
 
+    const UMat _AWORK;
+
     const UMat R0;
     const UMat R1;
     const UMat R2;
@@ -43,6 +45,8 @@ private:
     const UMat R11;
     const UMat R12;
     const UMat FLAG;
+
+    const UMat _DWORK;
 
 public:
     Scamp(const Sim *simulator);
@@ -129,7 +133,7 @@ inline void where(areg_t a) {
     scamp_ptr->perform_operation_analog(WHERE, a, (areg_t)0, (areg_t)0);
 }
 
-inline void where(dreg_t a) {
+inline void d_where(dreg_t a) {
     scamp_ptr->perform_operation_digital(WHERE, a, (dreg_t)0, (dreg_t)0);
 }
 

@@ -42,6 +42,7 @@ Scamp::Scamp(const Sim *simulator) :
         E(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
         F(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
         NEWS(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
+        _AWORK(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
         R0(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
         R1(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
         R2(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
@@ -55,7 +56,8 @@ Scamp::Scamp(const Sim *simulator) :
         R10(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
         R11(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
         R12(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        FLAG(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U, 255)) {
+        FLAG(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U, 255)),
+        _DWORK(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)) {
     sim_ptr = simulator;
 }
 
@@ -111,10 +113,8 @@ void Scamp::perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r
             int width = in_frame.cols;
             int height = in_frame.rows;
             Mat cropFrame = in_frame(Rect((width-height)/2, 0, height-1, height-1));
-            UMat work_frame(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S);
-            cropFrame.convertTo(work_frame, CV_8S, 1, -128);
-            double factor = SCAMP_HEIGHT/work_frame.cols;
-            resize(work_frame, target, cvSize(SCAMP_WIDTH, SCAMP_HEIGHT), factor, factor);
+            resize(cropFrame, cropFrame, cvSize(SCAMP_WIDTH, SCAMP_HEIGHT));
+            cropFrame.convertTo(target, CV_8S, 1, -128);
             break;
         }
         case ADD: {
@@ -126,31 +126,41 @@ void Scamp::perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r
             break;
         }
         case MOV: {
-            source1.copyTo(target);
+            source1.copyTo(target, FLAG);
             break;
         }
         case NORTH: {
-            source1(Rect(0, 0, SCAMP_WIDTH, SCAMP_HEIGHT-1)).copyTo(target(Rect(0, 1, SCAMP_WIDTH, SCAMP_HEIGHT-1)));
-            target(Rect(0, 0, SCAMP_WIDTH, 1)).setTo(Scalar(0));
+            source1(Rect(0, 0, SCAMP_WIDTH, SCAMP_HEIGHT-1)).copyTo(target(Rect(0, 1, SCAMP_WIDTH, SCAMP_HEIGHT-1)),
+                                                                    FLAG(Rect(0, 1, SCAMP_WIDTH, SCAMP_HEIGHT-1)));
+            target(Rect(0, 0, SCAMP_WIDTH, 1)).setTo(Scalar(0), FLAG(Rect(0, 0, SCAMP_WIDTH, 1)));
             break;
         }
         case EAST: {
-            source1(Rect(1, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)).copyTo(target(Rect(0, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)));
-            target(Rect(SCAMP_WIDTH-1, 0, 1, SCAMP_HEIGHT)).setTo(Scalar(0));
+            source1(Rect(1, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)).copyTo(target(Rect(0, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)),
+                                                                    FLAG(Rect(0, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)));
+            target(Rect(SCAMP_WIDTH-1, 0, 1, SCAMP_HEIGHT)).setTo(Scalar(0), FLAG(Rect(SCAMP_WIDTH-1, 0, 1, SCAMP_HEIGHT)));
             break;
         }
         case SOUTH: {
-            source1(Rect(0, 1, SCAMP_WIDTH, SCAMP_HEIGHT-1)).copyTo(target(Rect(0, 0, SCAMP_WIDTH, SCAMP_HEIGHT-1)));
-            target(Rect(0, SCAMP_HEIGHT-1, SCAMP_WIDTH, 1)).setTo(Scalar(0));
+            source1(Rect(0, 1, SCAMP_WIDTH, SCAMP_HEIGHT-1)).copyTo(target(Rect(0, 0, SCAMP_WIDTH, SCAMP_HEIGHT-1)),
+                                                                    FLAG(Rect(0, 0, SCAMP_WIDTH, SCAMP_HEIGHT-1)));
+            target(Rect(0, SCAMP_HEIGHT-1, SCAMP_WIDTH, 1)).setTo(Scalar(0), FLAG(Rect(0, SCAMP_HEIGHT-1, SCAMP_WIDTH, 1)));
             break;
         }
         case WEST: {
-            source1(Rect(0, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)).copyTo(target(Rect(1, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)));
-            target(Rect(0, 0, 1, SCAMP_HEIGHT)).setTo(Scalar(0));
+            source1(Rect(0, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)).copyTo(target(Rect(1, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)),
+                                                                    FLAG(Rect(1, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)));
+            target(Rect(0, 0, 1, SCAMP_HEIGHT)).setTo(Scalar(0), FLAG(Rect(0, 0, 1, SCAMP_HEIGHT)));
             break;
         }
         case DIV2: {
-            multiply(analog(r2), 0.5, analog(r1));
+            multiply(analog(r2), 0.5, _AWORK);
+            _AWORK.copyTo(analog(r1), FLAG);
+            break;
+        }
+        case WHERE: {
+            threshold(source1, _AWORK, 0, 255, THRESH_BINARY);
+            _AWORK.convertTo(FLAG, CV_8U, 2, 1);
             break;
         }
         default: {
@@ -162,10 +172,54 @@ void Scamp::perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r
 
 
 void Scamp::perform_operation_digital(opcode_t op, dreg_t r1, dreg_t r2, dreg_t r3) const {
+    auto target = digital(r1);
+    auto source1 = digital(r2);
+    auto source2 = digital(r3);
     switch(op) {
+        case WHERE: {
+            target.copyTo(FLAG);
+            break;
+        }
         case ALL: {
             Mat one(FLAG.size(), FLAG.type(), Scalar(255));
             one.copyTo(FLAG);
+            break;
+        }
+        case MOV: {
+            source1.copyTo(target, FLAG);
+            break;
+        }
+        case NORTH: {
+            source1(Rect(0, 0, SCAMP_WIDTH, SCAMP_HEIGHT-1)).copyTo(target(Rect(0, 1, SCAMP_WIDTH, SCAMP_HEIGHT-1)),
+                                                                    FLAG(Rect(0, 1, SCAMP_WIDTH, SCAMP_HEIGHT-1)));
+            target(Rect(0, 0, SCAMP_WIDTH, 1)).setTo(Scalar(0), FLAG(Rect(0, 0, SCAMP_WIDTH, 1)));
+            break;
+        }
+        case EAST: {
+            source1(Rect(1, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)).copyTo(target(Rect(0, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)),
+                                                                    FLAG(Rect(0, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)));
+            target(Rect(SCAMP_WIDTH-1, 0, 1, SCAMP_HEIGHT)).setTo(Scalar(0), FLAG(Rect(SCAMP_WIDTH-1, 0, 1, SCAMP_HEIGHT)));
+            break;
+        }
+        case SOUTH: {
+            source1(Rect(0, 1, SCAMP_WIDTH, SCAMP_HEIGHT-1)).copyTo(target(Rect(0, 0, SCAMP_WIDTH, SCAMP_HEIGHT-1)),
+                                                                    FLAG(Rect(0, 0, SCAMP_WIDTH, SCAMP_HEIGHT-1)));
+            target(Rect(0, SCAMP_HEIGHT-1, SCAMP_WIDTH, 1)).setTo(Scalar(0), FLAG(Rect(0, SCAMP_HEIGHT-1, SCAMP_WIDTH, 1)));
+            break;
+        }
+        case WEST: {
+            source1(Rect(0, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)).copyTo(target(Rect(1, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)),
+                                                                    FLAG(Rect(1, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)));
+            target(Rect(0, 0, 1, SCAMP_HEIGHT)).setTo(Scalar(0), FLAG(Rect(0, 0, 1, SCAMP_HEIGHT)));
+            break;
+        }
+        case NOT: {
+            bitwise_not(source1, target, FLAG);
+            break;
+        }
+        case NOR: {
+            bitwise_or(source1, source2, target, FLAG);
+            bitwise_not(target, target, FLAG);
             break;
         }
         default: {

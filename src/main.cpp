@@ -26,10 +26,10 @@ void shear_x(float lambda) {
 			if (acc > 0) {
 				acc -= 1.;
 				_b
-				where(R6);
+				d_where(R6);
 				west(B, B);
 				all();
-				where(R9);
+				d_where(R9);
 				east(B, B);
 				all();
 				_e
@@ -37,10 +37,10 @@ void shear_x(float lambda) {
 			else {
 				acc += 1.;
 				_b
-				where(R6);
+				d_where(R6);
 				east(B, B);
 				all();
-				where(R9);
+				d_where(R9);
 				west(B, B);
 				all();
 				_e
@@ -75,10 +75,10 @@ void shear_y(float lambda) {
 			if(acc >0) {
 				acc -= 1.;
 				_b
-				where(R6);
+				d_where(R6);
 				north(B, B);
 				all();
-				where(R9);
+				d_where(R9);
 				south(B, B);
 				all();
 				_e
@@ -86,10 +86,10 @@ void shear_y(float lambda) {
 			else {
 				acc += 1.;
 				_b
-				where(R6);
+				d_where(R6);
 				south(B, B);
 				all();
-				where(R9);
+				d_where(R9);
 				north(B, B);
 				all();
 				_e
@@ -125,10 +125,10 @@ void scale_y(float lambda) {
 			if (acc > 0) {
 				acc -= 1.;
 				_b
-				where(R6);
+				d_where(R6);
 				north(B, B);
 				all();
-				where(R9);
+				d_where(R9);
 				south(B, B);
 				all();
 				_e
@@ -136,10 +136,10 @@ void scale_y(float lambda) {
 			else {
 				acc += 1.;
 				_b
-				where(R6);
+				d_where(R6);
 				south(B, B);
 				all();
-				where(R9);
+				d_where(R9);
 				north(B, B);
 				all();
 				_e
@@ -176,10 +176,10 @@ void scale_x(float lambda) {
 			if (acc > 0) {
 				acc -= 1.;
 				_b
-				where(R6);
+				d_where(R6);
 				west(B, B);
 				all();
-				where(R9);
+				d_where(R9);
 				east(B, B);
 				all();
 				_e
@@ -187,10 +187,10 @@ void scale_x(float lambda) {
 			else {
 				acc += 1.;
 				_b
-				where(R6);
+				d_where(R6);
 				east(B, B);
 				all();
-				where(R9);
+				d_where(R9);
 				west(B, B);
 				all();
 				_e
@@ -221,7 +221,7 @@ int main(){
     simulation.source_camera();
 
     simulation.add_window(scamp.analog(A));
-    simulation.add_window(scamp.digital(R5));
+    simulation.add_window(scamp.analog(B));
 
 
     simulation.start_ui();
@@ -231,34 +231,27 @@ int main(){
 		simulation.update_ui();
 		simulation.acquire_frame();
 
-        int i_scale = 128;
+        int i_scale = 32;
         int i_angle = 128;
+        rpix(A);
+        mov(B, A);
+//------------------------------
 
-		_b
-		rpix(A);
-   //     d_select_pattern(R5, 0, 127, 255, 127); // whole upper half plane
-        d_select_pattern(R5, 0, 127, 255, 0);   // single line in middle
-
-//        mov(C, A);
-//        north(B, A);
-//        add(A, A, B);
-//        south(B, A);
-//        add(A, A, B);
-//        east(B, A);
-//        west(A, A);
-//        sub(A, A, B);
+//        d_select_pattern(R4, 0, 127, 255, 0);   // single line in middle
+//        d_where(R4);
+//        d_nor(R5, R4);
+//------------------------------
 
 
-
-//		float scale = i_scale / 100.;
+		float scale = i_scale / 100.;
 //		scale_x(scale);
 //		scale_y(scale);
-//
-//		float angle = 0.25*3.15*(i_angle/100.);
-//		float alpha = -tan(angle/2.);
-//		float beta = sin(angle);
+
+		float angle = 0.25*3.15*(i_angle/100.);
+		float alpha = -tan(angle/2.);
+		float beta = sin(angle);
 //		shear_x(alpha);
-//		shear_y(beta);
+		shear_y(beta);
 //		shear_x(alpha);
 
 
