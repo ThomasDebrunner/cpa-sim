@@ -195,7 +195,7 @@ void Scamp::perform_operation_digital(opcode_t op, dreg_t r1, dreg_t r2, dreg_t 
             target(Rect(0, 0, SCAMP_WIDTH, 1)).setTo(Scalar(0), FLAG(Rect(0, 0, SCAMP_WIDTH, 1)));
             break;
         }
-        case EAST: {
+        case WEST: {
             source1(Rect(1, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)).copyTo(target(Rect(0, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)),
                                                                     FLAG(Rect(0, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)));
             target(Rect(SCAMP_WIDTH-1, 0, 1, SCAMP_HEIGHT)).setTo(Scalar(0), FLAG(Rect(SCAMP_WIDTH-1, 0, 1, SCAMP_HEIGHT)));
@@ -207,7 +207,7 @@ void Scamp::perform_operation_digital(opcode_t op, dreg_t r1, dreg_t r2, dreg_t 
             target(Rect(0, SCAMP_HEIGHT-1, SCAMP_WIDTH, 1)).setTo(Scalar(0), FLAG(Rect(0, SCAMP_HEIGHT-1, SCAMP_WIDTH, 1)));
             break;
         }
-        case WEST: {
+        case EAST: {
             source1(Rect(0, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)).copyTo(target(Rect(1, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)),
                                                                     FLAG(Rect(1, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)));
             target(Rect(0, 0, 1, SCAMP_HEIGHT)).setTo(Scalar(0), FLAG(Rect(0, 0, 1, SCAMP_HEIGHT)));

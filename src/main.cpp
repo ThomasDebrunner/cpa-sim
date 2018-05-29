@@ -232,7 +232,7 @@ int main(){
 		simulation.acquire_frame();
 
         int i_scale = 32;
-        int i_angle = 128;
+        int i_angle = 19;
         rpix(A);
         mov(B, A);
 //------------------------------
@@ -244,15 +244,15 @@ int main(){
 
 
 		float scale = i_scale / 100.;
-//		scale_x(scale);
-//		scale_y(scale);
+		scale_x(scale);
+		scale_y(scale);
 
 		float angle = 0.25*3.15*(i_angle/100.);
 		float alpha = -tan(angle/2.);
 		float beta = sin(angle);
-//		shear_x(alpha);
+		shear_x(alpha);
 		shear_y(beta);
-//		shear_x(alpha);
+		shear_x(alpha);
 
 
 	}
