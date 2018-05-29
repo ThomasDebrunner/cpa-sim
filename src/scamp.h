@@ -92,6 +92,10 @@ inline void mov(areg_t target, areg_t source) {
     scamp_ptr->perform_operation_analog(MOV, target, source, (areg_t)0);
 }
 
+inline void div2(areg_t target, areg_t source) {
+    scamp_ptr->perform_operation_analog(DIV2, target, source, (areg_t)0);
+}
+
 
 inline void d_nor(dreg_t target, dreg_t source) {
     scamp_ptr->perform_operation_digital(NOT, target, source, (dreg_t)0);

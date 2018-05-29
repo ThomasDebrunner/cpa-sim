@@ -220,9 +220,15 @@ int main(){
     simulation.source_camera();
 
     simulation.add_window(scamp.analog(A));
+    simulation.add_window(scamp.analog(B));
+    simulation.add_window(scamp.analog(C));
+
+
     simulation.start_ui();
 
-	while (1) {
+    bool quit = false;
+	while (!quit) {
+		simulation.update_ui();
 		simulation.acquire_frame();
 
         int i_scale = 128;
@@ -230,8 +236,16 @@ int main(){
 
 		_b
 		rpix(A);
-		mov(B, A);
-		_e
+
+        north(B, A);
+        add(A, A, B);
+        south(B, A);
+        add(A, A, B);
+        east(B, A);
+        west(A, A);
+        sub(A, A, B);
+
+
 
 //		float scale = i_scale / 100.;
 //		scale_x(scale);

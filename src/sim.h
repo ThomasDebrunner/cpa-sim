@@ -34,6 +34,7 @@ public:
     void source_camera();
     window_ref_t add_window(const cv::UMat& reg);
     void start_ui();
+    void update_ui();
     const cv::Mat &get_frame() const;
     ~Sim();
 };

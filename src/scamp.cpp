@@ -10,6 +10,7 @@
 using namespace cv;
 Scamp * scamp_ptr = NULL;
 
+
 Scamp::Scamp(const Sim *simulator) :
         A(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
         B(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
@@ -31,7 +32,7 @@ Scamp::Scamp(const Sim *simulator) :
         R10(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
         R11(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
         R12(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        FLAG(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)) {
+        FLAG(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U, 255)) {
     sim_ptr = simulator;
 }
 
@@ -82,7 +83,7 @@ void Scamp::perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r
             int width = in_frame.cols;
             int height = in_frame.rows;
             Mat cropFrame = in_frame(Rect((width-height)/2, 0, height-1, height-1));
-            UMat work_frame;
+            UMat work_frame(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U);
             cropFrame.copyTo(work_frame);
             double factor = SCAMP_HEIGHT/work_frame.cols;
             resize(work_frame, analog(r1), cvSize(SCAMP_WIDTH, SCAMP_HEIGHT), factor, factor);
@@ -101,16 +102,27 @@ void Scamp::perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r
             break;
         }
         case NORTH: {
+            Matx<double, 2, 3> trans_mat(1, 0, 0, 0, 1, 1);
+            warpAffine(analog(r2), analog(r1), trans_mat, cvSize(SCAMP_WIDTH, SCAMP_HEIGHT));
             break;
         }
         case EAST: {
+            Matx<double, 2, 3> trans_mat(1, 0, -1, 0, 1, 0);
+            warpAffine(analog(r2), analog(r1), trans_mat, cvSize(SCAMP_WIDTH, SCAMP_HEIGHT));
             break;
         }
         case SOUTH: {
+            Matx<double, 2, 3> trans_mat(1, 0, 0, 0, 1, -1);
+            warpAffine(analog(r2), analog(r1), trans_mat, cvSize(SCAMP_WIDTH, SCAMP_HEIGHT));
             break;
         }
         case WEST: {
+            Matx<double, 2, 3> trans_mat(1, 0, 1, 0, 1, 0);
+            warpAffine(analog(r2), analog(r1), trans_mat, cvSize(SCAMP_WIDTH, SCAMP_HEIGHT));
             break;
+        }
+        case DIV2: {
+            multiply(analog(r2), 0.5, analog(r1));
         }
         default: {
             std::cerr << "Opcode " << op << " not implemented" << std::endl;

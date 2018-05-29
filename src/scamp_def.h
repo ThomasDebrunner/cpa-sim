@@ -27,6 +27,7 @@ namespace SCAMP {
         NOR,
         SELECT_PATTERN,
         ALL,
+        DIV2,
     } opcode_t;
 
     typedef enum AREG{

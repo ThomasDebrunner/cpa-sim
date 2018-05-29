@@ -52,26 +52,25 @@ void Sim::start_ui () {
 }
 
 void Sim::acquire_frame() {
-    if (cap == NULL) {
+    if (cap == nullptr) {
         std::cerr << "[Error] No capture source specified" << std::endl;
     }
     *cap >> frame;
+}
 
-    {
+void Sim::update_ui() {
+    if (chrono::high_resolution_clock::now() - last_frame_download >= chrono::milliseconds(MIN_PERIOD)) {
         lock_guard<mutex> l(download_guard);
-        if (chrono::high_resolution_clock::now() - last_frame_download >= chrono::milliseconds(MIN_PERIOD)) {
-            last_frame_download = chrono::high_resolution_clock::now();
-            for (int i=0; i<gpu_images.size(); i++) {
-                gpu_images[i].copyTo(display_images[i]);
-            }
-            for (int i=0; i<display_images.size(); i++) {
-                string window_name = "Output_" + to_string(i);
-                cv::imshow(window_name, display_images[i]);
-                cv::waitKey(1);
-            }
+        last_frame_download = chrono::high_resolution_clock::now();
+        for (int i=0; i<gpu_images.size(); i++) {
+            gpu_images[i].copyTo(display_images[i]);
+        }
+        for (int i=0; i<display_images.size(); i++) {
+            string window_name = "Output_" + to_string(i);
+            cv::imshow(window_name, display_images[i]);
+            cv::waitKey(1);
         }
     }
-
 }
 
 void Sim::source_camera() {
