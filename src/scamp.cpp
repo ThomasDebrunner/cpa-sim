@@ -12,27 +12,27 @@ Scamp * scamp_ptr = NULL;
 
 
 Scamp::Scamp(const Sim *simulator) :
-        A(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        B(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        C(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        D(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        E(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        F(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        NEWS(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        R0(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        R1(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        R2(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        R3(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        R4(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        R5(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        R6(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        R7(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        R8(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        R9(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        R10(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        R11(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        R12(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        FLAG(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U, 255)) {
+        A(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
+        B(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
+        C(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
+        D(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
+        E(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
+        F(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
+        NEWS(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
+        R0(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
+        R1(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
+        R2(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
+        R3(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
+        R4(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
+        R5(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
+        R6(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
+        R7(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
+        R8(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
+        R9(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
+        R10(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
+        R11(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
+        R12(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
+        FLAG(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S, 255)) {
     sim_ptr = simulator;
 }
 
@@ -49,6 +49,7 @@ const UMat &Scamp::analog(areg_t a) const {
         case SCAMP::E: return E;
         case SCAMP::F: return F;
         case SCAMP::NEWS: return NEWS;
+        default: return A;
     }
 }
 
@@ -68,11 +69,15 @@ const UMat &Scamp::digital(dreg_t a) const {
         case SCAMP::R11: return R11;
         case SCAMP::R12: return R12;
         case SCAMP::FLAG: return FLAG;
+        default: return A;
     }
 }
 
 
 void Scamp::perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r3) const {
+    auto target = analog(r1);
+    auto source1 = analog(r2);
+    auto source2 = analog(r3);
     switch(op) {
         case RPIX: {
             if (!this->sim_ptr) {
@@ -83,42 +88,42 @@ void Scamp::perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r
             int width = in_frame.cols;
             int height = in_frame.rows;
             Mat cropFrame = in_frame(Rect((width-height)/2, 0, height-1, height-1));
-            UMat work_frame(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U);
-            cropFrame.copyTo(work_frame);
+            UMat work_frame(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S);
+            cropFrame.convertTo(work_frame, CV_8S, 1, -128);
             double factor = SCAMP_HEIGHT/work_frame.cols;
-            resize(work_frame, analog(r1), cvSize(SCAMP_WIDTH, SCAMP_HEIGHT), factor, factor);
+            resize(work_frame, target, cvSize(SCAMP_WIDTH, SCAMP_HEIGHT), factor, factor);
             break;
         }
         case ADD: {
-            add(analog(r2), analog(r3), analog(r1), FLAG);
+            add(source1, source2, target, FLAG);
             break;
         }
         case SUB: {
-            subtract(analog(r2), analog(r3), analog(r1), FLAG);
+            subtract(source1, source2, target, FLAG);
             break;
         }
         case MOV: {
-            analog(r2).copyTo(analog(r1));
+            source1.copyTo(target);
             break;
         }
         case NORTH: {
-            Matx<double, 2, 3> trans_mat(1, 0, 0, 0, 1, 1);
-            warpAffine(analog(r2), analog(r1), trans_mat, cvSize(SCAMP_WIDTH, SCAMP_HEIGHT));
+            source1(Rect(0, 0, SCAMP_WIDTH, SCAMP_HEIGHT-1)).copyTo(target(Rect(0, 1, SCAMP_WIDTH, SCAMP_HEIGHT-1)));
+            target(Rect(0, 0, SCAMP_WIDTH, 1)).setTo(Scalar(0));
             break;
         }
         case EAST: {
-            Matx<double, 2, 3> trans_mat(1, 0, -1, 0, 1, 0);
-            warpAffine(analog(r2), analog(r1), trans_mat, cvSize(SCAMP_WIDTH, SCAMP_HEIGHT));
+            source1(Rect(1, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)).copyTo(target(Rect(0, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)));
+            target(Rect(SCAMP_WIDTH-1, 0, 1, SCAMP_HEIGHT)).setTo(Scalar(0));
             break;
         }
         case SOUTH: {
-            Matx<double, 2, 3> trans_mat(1, 0, 0, 0, 1, -1);
-            warpAffine(analog(r2), analog(r1), trans_mat, cvSize(SCAMP_WIDTH, SCAMP_HEIGHT));
+            source1(Rect(0, 1, SCAMP_WIDTH, SCAMP_HEIGHT-1)).copyTo(target(Rect(0, 0, SCAMP_WIDTH, SCAMP_HEIGHT-1)));
+            target(Rect(0, SCAMP_HEIGHT-1, SCAMP_WIDTH, 1)).setTo(Scalar(0));
             break;
         }
         case WEST: {
-            Matx<double, 2, 3> trans_mat(1, 0, 1, 0, 1, 0);
-            warpAffine(analog(r2), analog(r1), trans_mat, cvSize(SCAMP_WIDTH, SCAMP_HEIGHT));
+            source1(Rect(0, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)).copyTo(target(Rect(1, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)));
+            target(Rect(0, 0, 1, SCAMP_HEIGHT)).setTo(Scalar(0));
             break;
         }
         case DIV2: {

@@ -220,7 +220,6 @@ int main(){
     simulation.source_camera();
 
     simulation.add_window(scamp.analog(A));
-    simulation.add_window(scamp.analog(B));
     simulation.add_window(scamp.analog(C));
 
 
@@ -237,13 +236,18 @@ int main(){
 		_b
 		rpix(A);
 
-        north(B, A);
-        add(A, A, B);
-        south(B, A);
-        add(A, A, B);
-        east(B, A);
-        west(A, A);
-        sub(A, A, B);
+        for (int i=0; i<50; i++) {
+            west(A, A);
+        }
+
+//        mov(C, A);
+//        north(B, A);
+//        add(A, A, B);
+//        south(B, A);
+//        add(A, A, B);
+//        east(B, A);
+//        west(A, A);
+//        sub(A, A, B);
 
 
 
