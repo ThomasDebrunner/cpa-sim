@@ -22,11 +22,7 @@ private:
     vector<const cv::UMat> gpu_images;
     vector<const cv::Mat> display_images;
     chrono::time_point<chrono::high_resolution_clock> last_frame_download;
-    thread* ui_thread;
     mutex download_guard;
-
-    void ui_routine();
-    bool quit = false;
 
 public:
     Sim();

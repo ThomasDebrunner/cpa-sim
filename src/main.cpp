@@ -235,12 +235,6 @@ int main(){
         int i_angle = 19;
         rpix(A);
         mov(B, A);
-//------------------------------
-
-//        d_select_pattern(R4, 0, 127, 255, 0);   // single line in middle
-//        d_where(R4);
-//        d_nor(R5, R4);
-//------------------------------
 
 
 		float scale = i_scale / 100.;

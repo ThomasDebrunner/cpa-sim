@@ -8,30 +8,8 @@
 #include <string>
 #include "opencv2/opencv.hpp"
 #include <chrono>
-#include <thread>
 
 using namespace std;
-
-void Sim::ui_routine() {
-    auto last_frame_time = chrono::high_resolution_clock::now();
-    for (int i=0; i<display_images.size(); i++) {
-        string window_name = "Output_" + to_string(i);
-        cv::namedWindow(window_name, cv::WINDOW_AUTOSIZE);
-    }
-
-    while (!quit) {
-        {
-            lock_guard<mutex> l(download_guard);
-            for (int i=0; i<display_images.size(); i++) {
-                string window_name = "Output_" + to_string(i);
-                cv::imshow(window_name, display_images[i]);
-                cv::waitKey(1);
-            }
-        }
-
-    }
-}
-
 
 Sim::Sim() :
         last_frame_download(chrono::high_resolution_clock::now()) {
@@ -40,7 +18,6 @@ Sim::Sim() :
 
 Sim::~Sim() {
     free(cap);
-    free(ui_thread);
 }
 
 void Sim::start_ui () {
@@ -48,7 +25,6 @@ void Sim::start_ui () {
         string window_name = "Output_" + to_string(i);
         cv::namedWindow(window_name, cv::WINDOW_AUTOSIZE);
     }
-  //  ui_thread = new thread(&Sim::ui_routine, this);
 }
 
 void Sim::acquire_frame() {
