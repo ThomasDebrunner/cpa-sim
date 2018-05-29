@@ -162,6 +162,7 @@ void scale_y(float lambda) {
 
 
 void scale_x(float lambda) {
+    // row-addr, col-addr, row-dc, col-dc
 	d_select_pattern(R5, 0, 127, 255, 0);   // single line in middle
 	d_select_pattern(R6, 0, 127, 255, 127); // whole upper half plane
 	d_select_pattern(R8, 0, 128, 255, 0);   // single line in middle
@@ -220,7 +221,7 @@ int main(){
     simulation.source_camera();
 
     simulation.add_window(scamp.analog(A));
-    simulation.add_window(scamp.analog(C));
+    simulation.add_window(scamp.digital(R5));
 
 
     simulation.start_ui();
@@ -235,10 +236,8 @@ int main(){
 
 		_b
 		rpix(A);
-
-        for (int i=0; i<50; i++) {
-            west(A, A);
-        }
+   //     d_select_pattern(R5, 0, 127, 255, 127); // whole upper half plane
+        d_select_pattern(R5, 0, 127, 255, 0);   // single line in middle
 
 //        mov(C, A);
 //        north(B, A);

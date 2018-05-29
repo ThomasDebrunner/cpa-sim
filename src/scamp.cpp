@@ -11,6 +11,29 @@ using namespace cv;
 Scamp * scamp_ptr = NULL;
 
 
+struct PatternGenerator
+{
+public:
+    PatternGenerator(
+            int row_needle,
+            int col_needle,
+            int row_mask,
+            int col_mask) :
+        row_needle(row_needle),
+        col_needle(col_needle),
+        row_mask(row_mask),
+        col_mask(col_mask) {}
+
+    void operator ()(uint8_t &pixel, const int * position) const {
+        pixel = !((position[0]&row_mask)^row_needle) && !((position[1]&col_mask)^col_needle) ? (uint8_t)255:(uint8_t)0;
+    }
+
+private:
+    int row_needle, col_needle, row_mask, col_mask;
+};
+
+
+
 Scamp::Scamp(const Sim *simulator) :
         A(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
         B(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
@@ -19,20 +42,20 @@ Scamp::Scamp(const Sim *simulator) :
         E(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
         F(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
         NEWS(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
-        R0(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
-        R1(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
-        R2(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
-        R3(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
-        R4(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
-        R5(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
-        R6(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
-        R7(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
-        R8(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
-        R9(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
-        R10(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
-        R11(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
-        R12(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
-        FLAG(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S, 255)) {
+        R0(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        R1(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        R2(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        R3(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        R4(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        R5(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        R6(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        R7(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        R8(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        R9(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        R10(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        R11(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        R12(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        FLAG(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U, 255)) {
     sim_ptr = simulator;
 }
 
@@ -128,6 +151,7 @@ void Scamp::perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r
         }
         case DIV2: {
             multiply(analog(r2), 0.5, analog(r1));
+            break;
         }
         default: {
             std::cerr << "Opcode " << op << " not implemented" << std::endl;
@@ -139,6 +163,11 @@ void Scamp::perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r
 
 void Scamp::perform_operation_digital(opcode_t op, dreg_t r1, dreg_t r2, dreg_t r3) const {
     switch(op) {
+        case ALL: {
+            Mat one(FLAG.size(), FLAG.type(), Scalar(255));
+            one.copyTo(FLAG);
+            break;
+        }
         default: {
             std::cerr << "Opcode " << op << " not implemented" << std::endl;
             break;
@@ -163,6 +192,18 @@ void Scamp::perform_operation_analog_io(opcode_t op, areg_t r, int a) const {
 
 void Scamp::perform_operation_digital_io(opcode_t op, dreg_t r, int a, int b, int c, int d) const {
     switch(op) {
+        case SELECT_PATTERN: {
+            auto row_mask = ~c;
+            auto col_mask = ~d;
+            auto row_needle = a & row_mask;
+            auto col_needle = b & col_mask;
+
+            PatternGenerator generator(row_needle, col_needle, row_mask, col_mask);
+            Mat pattern(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U);
+            pattern.forEach<uint8_t>(generator);
+            pattern.copyTo(digital(r));
+            break;
+        }
         default: {
             std::cerr << "Opcode " << op << " not implemented" << std::endl;
             return;
