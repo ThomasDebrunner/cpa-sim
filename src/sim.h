@@ -19,7 +19,7 @@ class Sim {
 private:
     cv::VideoCapture *cap;
     cv::Mat frame;
-    vector<const cv::cuda::GpuMat> gpu_images;
+    vector<const cv::UMat> gpu_images;
     vector<const cv::Mat> display_images;
     chrono::time_point<chrono::high_resolution_clock> last_frame_download;
     thread* ui_thread;
@@ -32,7 +32,7 @@ public:
     Sim();
     void acquire_frame();
     void source_camera();
-    window_ref_t add_window(const cv::cuda::GpuMat& reg);
+    window_ref_t add_window(const cv::UMat& reg);
     void start_ui();
     const cv::Mat &get_frame() const;
     ~Sim();

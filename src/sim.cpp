@@ -35,7 +35,7 @@ void Sim::ui_routine() {
 
 Sim::Sim() :
         last_frame_download(chrono::high_resolution_clock::now()) {
-  //  cout << cv::getBuildInformation() << std::endl;
+    cout << cv::getBuildInformation() << std::endl;
 }
 
 Sim::~Sim() {
@@ -62,7 +62,7 @@ void Sim::acquire_frame() {
         if (chrono::high_resolution_clock::now() - last_frame_download >= chrono::milliseconds(MIN_PERIOD)) {
             last_frame_download = chrono::high_resolution_clock::now();
             for (int i=0; i<gpu_images.size(); i++) {
-                gpu_images[i].download(display_images[i]);
+                gpu_images[i].copyTo(display_images[i]);
             }
             for (int i=0; i<display_images.size(); i++) {
                 string window_name = "Output_" + to_string(i);
@@ -82,7 +82,7 @@ const cv::Mat &Sim::get_frame() const {
     return frame;
 }
 
-window_ref_t Sim::add_window(const cv::cuda::GpuMat& reg) {
+window_ref_t Sim::add_window(const cv::UMat& reg) {
     gpu_images.push_back(reg);
     cv::Mat display_image(reg.size(), reg.type());
     {

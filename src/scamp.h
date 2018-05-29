@@ -21,33 +21,33 @@ class Scamp {
 private:
     const Sim* sim_ptr;
 
-    const cuda::GpuMat A;
-    const cuda::GpuMat B;
-    const cuda::GpuMat C;
-    const cuda::GpuMat D;
-    const cuda::GpuMat E;
-    const cuda::GpuMat F;
-    const cuda::GpuMat NEWS;
+    const UMat A;
+    const UMat B;
+    const UMat C;
+    const UMat D;
+    const UMat E;
+    const UMat F;
+    const UMat NEWS;
 
-    const cuda::GpuMat R0;
-    const cuda::GpuMat R1;
-    const cuda::GpuMat R2;
-    const cuda::GpuMat R3;
-    const cuda::GpuMat R4;
-    const cuda::GpuMat R5;
-    const cuda::GpuMat R6;
-    const cuda::GpuMat R7;
-    const cuda::GpuMat R8;
-    const cuda::GpuMat R9;
-    const cuda::GpuMat R10;
-    const cuda::GpuMat R11;
-    const cuda::GpuMat R12;
-    const cuda::GpuMat FLAG;
+    const UMat R0;
+    const UMat R1;
+    const UMat R2;
+    const UMat R3;
+    const UMat R4;
+    const UMat R5;
+    const UMat R6;
+    const UMat R7;
+    const UMat R8;
+    const UMat R9;
+    const UMat R10;
+    const UMat R11;
+    const UMat R12;
+    const UMat FLAG;
 
 public:
     Scamp(const Sim *simulator);
-    const cuda::GpuMat &analog(areg_t a) const;
-    const cuda::GpuMat &digital(dreg_t a) const;
+    const UMat &analog(areg_t a) const;
+    const UMat &digital(dreg_t a) const;
 
     void make_global();
     void perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r3) const;

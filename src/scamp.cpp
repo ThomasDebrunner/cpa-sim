@@ -11,27 +11,27 @@ using namespace cv;
 Scamp * scamp_ptr = NULL;
 
 Scamp::Scamp(const Sim *simulator) :
-        A(cuda::GpuMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        B(cuda::GpuMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        C(cuda::GpuMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        D(cuda::GpuMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        E(cuda::GpuMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        F(cuda::GpuMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        NEWS(cuda::GpuMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        R0(cuda::GpuMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        R1(cuda::GpuMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        R2(cuda::GpuMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        R3(cuda::GpuMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        R4(cuda::GpuMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        R5(cuda::GpuMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        R6(cuda::GpuMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        R7(cuda::GpuMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        R8(cuda::GpuMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        R9(cuda::GpuMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        R10(cuda::GpuMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        R11(cuda::GpuMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        R12(cuda::GpuMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
-        FLAG(cuda::GpuMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)) {
+        A(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        B(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        C(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        D(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        E(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        F(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        NEWS(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        R0(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        R1(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        R2(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        R3(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        R4(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        R5(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        R6(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        R7(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        R8(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        R9(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        R10(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        R11(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        R12(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        FLAG(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)) {
     sim_ptr = simulator;
 }
 
@@ -39,7 +39,7 @@ void Scamp::make_global() {
     scamp_ptr = this;
 }
 
-const cuda::GpuMat &Scamp::analog(areg_t a) const {
+const UMat &Scamp::analog(areg_t a) const {
     switch(a) {
         case SCAMP::A: return A;
         case SCAMP::B: return B;
@@ -51,7 +51,7 @@ const cuda::GpuMat &Scamp::analog(areg_t a) const {
     }
 }
 
-const cuda::GpuMat &Scamp::digital(dreg_t a) const {
+const UMat &Scamp::digital(dreg_t a) const {
     switch(a) {
         case SCAMP::R0: return R0;
         case SCAMP::R1: return R1;
@@ -82,18 +82,18 @@ void Scamp::perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r
             int width = in_frame.cols;
             int height = in_frame.rows;
             Mat cropFrame = in_frame(Rect((width-height)/2, 0, height-1, height-1));
-            cuda::GpuMat work_frame;
-            work_frame.upload(cropFrame);
+            UMat work_frame;
+            cropFrame.copyTo(work_frame);
             double factor = SCAMP_HEIGHT/work_frame.cols;
-            cuda::resize(work_frame, analog(r1), cvSize(SCAMP_WIDTH, SCAMP_HEIGHT), factor, factor);
+            resize(work_frame, analog(r1), cvSize(SCAMP_WIDTH, SCAMP_HEIGHT), factor, factor);
             break;
         }
         case ADD: {
-            cuda::add(analog(r2), analog(r3), analog(r1), FLAG);
+            add(analog(r2), analog(r3), analog(r1), FLAG);
             break;
         }
         case SUB: {
-            cuda::subtract(analog(r2), analog(r3), analog(r1), FLAG);
+            subtract(analog(r2), analog(r3), analog(r1), FLAG);
             break;
         }
         case MOV: {
@@ -133,7 +133,7 @@ void Scamp::perform_operation_digital(opcode_t op, dreg_t r1, dreg_t r2, dreg_t 
 void Scamp::perform_operation_analog_io(opcode_t op, areg_t r, int a) const {
     switch(op) {
         case IN: {
-            cuda::GpuMat c(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S, a);
+            UMat c(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S, a);
             c.copyTo(analog(r));
             break;
         }
