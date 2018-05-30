@@ -21,6 +21,7 @@ namespace SCAMP {
         SOUTH,
         WEST,
         IN,
+        INV,
         MOV,
         WHERE,
         NOT,

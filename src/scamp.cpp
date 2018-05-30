@@ -171,8 +171,12 @@ void Scamp::perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r
             break;
         }
         case DIV2: {
-            multiply(analog(r2), 0.5, _AWORK);
-            _AWORK.copyTo(analog(r1), FLAG);
+            multiply(source1, 0.5, _AWORK);
+            _AWORK.copyTo(target, FLAG);
+            break;
+        }
+        case INV: {
+            bitwise_not(source1, target, FLAG);
             break;
         }
         case WHERE: {
