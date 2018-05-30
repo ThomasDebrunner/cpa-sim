@@ -103,6 +103,7 @@ void Scamp::perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r
     auto target = analog(r1);
     auto source1 = analog(r2);
     auto source2 = analog(r3);
+    bool write_on_read = (r1 == r2 || r1 == r3) && r1 != 0;
     switch(op) {
         case RPIX: {
             if (!this->sim_ptr) {
@@ -130,27 +131,43 @@ void Scamp::perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r
             break;
         }
         case NORTH: {
-            source1(Rect(0, 0, SCAMP_WIDTH, SCAMP_HEIGHT-1)).copyTo(target(Rect(0, 1, SCAMP_WIDTH, SCAMP_HEIGHT-1)),
+            auto destination = write_on_read ? _AWORK : target;
+            source1(Rect(0, 0, SCAMP_WIDTH, SCAMP_HEIGHT-1)).copyTo(destination(Rect(0, 1, SCAMP_WIDTH, SCAMP_HEIGHT-1)),
                                                                     FLAG(Rect(0, 1, SCAMP_WIDTH, SCAMP_HEIGHT-1)));
-            target(Rect(0, 0, SCAMP_WIDTH, 1)).setTo(Scalar(0), FLAG(Rect(0, 0, SCAMP_WIDTH, 1)));
+            destination(Rect(0, 0, SCAMP_WIDTH, 1)).setTo(Scalar(0), FLAG(Rect(0, 0, SCAMP_WIDTH, 1)));
+            if (write_on_read) {
+                _AWORK.copyTo(target, FLAG);
+            }
             break;
         }
         case EAST: {
-            source1(Rect(1, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)).copyTo(target(Rect(0, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)),
+            auto destination = write_on_read ? _AWORK : target;
+            source1(Rect(1, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)).copyTo(destination(Rect(0, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)),
                                                                     FLAG(Rect(0, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)));
-            target(Rect(SCAMP_WIDTH-1, 0, 1, SCAMP_HEIGHT)).setTo(Scalar(0), FLAG(Rect(SCAMP_WIDTH-1, 0, 1, SCAMP_HEIGHT)));
+            destination(Rect(SCAMP_WIDTH-1, 0, 1, SCAMP_HEIGHT)).setTo(Scalar(0), FLAG(Rect(SCAMP_WIDTH-1, 0, 1, SCAMP_HEIGHT)));
+            if (write_on_read) {
+                _AWORK.copyTo(target, FLAG);
+            }
             break;
         }
         case SOUTH: {
-            source1(Rect(0, 1, SCAMP_WIDTH, SCAMP_HEIGHT-1)).copyTo(target(Rect(0, 0, SCAMP_WIDTH, SCAMP_HEIGHT-1)),
+            auto destination = write_on_read ? _AWORK : target;
+            source1(Rect(0, 1, SCAMP_WIDTH, SCAMP_HEIGHT-1)).copyTo(destination(Rect(0, 0, SCAMP_WIDTH, SCAMP_HEIGHT-1)),
                                                                     FLAG(Rect(0, 0, SCAMP_WIDTH, SCAMP_HEIGHT-1)));
-            target(Rect(0, SCAMP_HEIGHT-1, SCAMP_WIDTH, 1)).setTo(Scalar(0), FLAG(Rect(0, SCAMP_HEIGHT-1, SCAMP_WIDTH, 1)));
+            destination(Rect(0, SCAMP_HEIGHT-1, SCAMP_WIDTH, 1)).setTo(Scalar(0), FLAG(Rect(0, SCAMP_HEIGHT-1, SCAMP_WIDTH, 1)));
+            if (write_on_read) {
+                _AWORK.copyTo(target, FLAG);
+            }
             break;
         }
         case WEST: {
-            source1(Rect(0, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)).copyTo(target(Rect(1, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)),
+            auto destination = write_on_read ? _AWORK : target;
+            source1(Rect(0, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)).copyTo(destination(Rect(1, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)),
                                                                     FLAG(Rect(1, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)));
-            target(Rect(0, 0, 1, SCAMP_HEIGHT)).setTo(Scalar(0), FLAG(Rect(0, 0, 1, SCAMP_HEIGHT)));
+            destination(Rect(0, 0, 1, SCAMP_HEIGHT)).setTo(Scalar(0), FLAG(Rect(0, 0, 1, SCAMP_HEIGHT)));
+            if (write_on_read) {
+                _AWORK.copyTo(target, FLAG);
+            }
             break;
         }
         case DIV2: {
@@ -175,6 +192,7 @@ void Scamp::perform_operation_digital(opcode_t op, dreg_t r1, dreg_t r2, dreg_t 
     auto target = digital(r1);
     auto source1 = digital(r2);
     auto source2 = digital(r3);
+    bool write_on_read = (r1 == r2 || r1 == r3) && r1 != 0;
     switch(op) {
         case WHERE: {
             target.copyTo(FLAG);
@@ -190,27 +208,43 @@ void Scamp::perform_operation_digital(opcode_t op, dreg_t r1, dreg_t r2, dreg_t 
             break;
         }
         case NORTH: {
-            source1(Rect(0, 0, SCAMP_WIDTH, SCAMP_HEIGHT-1)).copyTo(target(Rect(0, 1, SCAMP_WIDTH, SCAMP_HEIGHT-1)),
+            auto destination = write_on_read ? _DWORK : target;
+            source1(Rect(0, 0, SCAMP_WIDTH, SCAMP_HEIGHT-1)).copyTo(destination(Rect(0, 1, SCAMP_WIDTH, SCAMP_HEIGHT-1)),
                                                                     FLAG(Rect(0, 1, SCAMP_WIDTH, SCAMP_HEIGHT-1)));
-            target(Rect(0, 0, SCAMP_WIDTH, 1)).setTo(Scalar(0), FLAG(Rect(0, 0, SCAMP_WIDTH, 1)));
-            break;
-        }
-        case WEST: {
-            source1(Rect(1, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)).copyTo(target(Rect(0, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)),
-                                                                    FLAG(Rect(0, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)));
-            target(Rect(SCAMP_WIDTH-1, 0, 1, SCAMP_HEIGHT)).setTo(Scalar(0), FLAG(Rect(SCAMP_WIDTH-1, 0, 1, SCAMP_HEIGHT)));
-            break;
-        }
-        case SOUTH: {
-            source1(Rect(0, 1, SCAMP_WIDTH, SCAMP_HEIGHT-1)).copyTo(target(Rect(0, 0, SCAMP_WIDTH, SCAMP_HEIGHT-1)),
-                                                                    FLAG(Rect(0, 0, SCAMP_WIDTH, SCAMP_HEIGHT-1)));
-            target(Rect(0, SCAMP_HEIGHT-1, SCAMP_WIDTH, 1)).setTo(Scalar(0), FLAG(Rect(0, SCAMP_HEIGHT-1, SCAMP_WIDTH, 1)));
+            destination(Rect(0, 0, SCAMP_WIDTH, 1)).setTo(Scalar(0), FLAG(Rect(0, 0, SCAMP_WIDTH, 1)));
+            if (write_on_read) {
+                _DWORK.copyTo(target, FLAG);
+            }
             break;
         }
         case EAST: {
-            source1(Rect(0, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)).copyTo(target(Rect(1, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)),
+            auto destination = write_on_read ? _DWORK : target;
+            source1(Rect(1, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)).copyTo(destination(Rect(0, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)),
+                                                                    FLAG(Rect(0, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)));
+            destination(Rect(SCAMP_WIDTH-1, 0, 1, SCAMP_HEIGHT)).setTo(Scalar(0), FLAG(Rect(SCAMP_WIDTH-1, 0, 1, SCAMP_HEIGHT)));
+            if (write_on_read) {
+                _DWORK.copyTo(target, FLAG);
+            }
+            break;
+        }
+        case SOUTH: {
+            auto destination = write_on_read ? _DWORK : target;
+            source1(Rect(0, 1, SCAMP_WIDTH, SCAMP_HEIGHT-1)).copyTo(destination(Rect(0, 0, SCAMP_WIDTH, SCAMP_HEIGHT-1)),
+                                                                    FLAG(Rect(0, 0, SCAMP_WIDTH, SCAMP_HEIGHT-1)));
+            destination(Rect(0, SCAMP_HEIGHT-1, SCAMP_WIDTH, 1)).setTo(Scalar(0), FLAG(Rect(0, SCAMP_HEIGHT-1, SCAMP_WIDTH, 1)));
+            if (write_on_read) {
+                _DWORK.copyTo(target, FLAG);
+            }
+            break;
+        }
+        case WEST: {
+            auto destination = write_on_read ? _DWORK : target;
+            source1(Rect(0, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)).copyTo(destination(Rect(1, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)),
                                                                     FLAG(Rect(1, 0, SCAMP_WIDTH-1, SCAMP_HEIGHT)));
-            target(Rect(0, 0, 1, SCAMP_HEIGHT)).setTo(Scalar(0), FLAG(Rect(0, 0, 1, SCAMP_HEIGHT)));
+            destination(Rect(0, 0, 1, SCAMP_HEIGHT)).setTo(Scalar(0), FLAG(Rect(0, 0, 1, SCAMP_HEIGHT)));
+            if (write_on_read) {
+                _DWORK.copyTo(target, FLAG);
+            }
             break;
         }
         case NOT: {

@@ -15,6 +15,7 @@ There are some differences to the physical chip:
 * The `NEWS` register does not update on neighbor transfers
 * The `F` register does not update on arithmetic operations
 * Some reset-on-write logic (R12?) is not implemented
+* All operations can work in-place, where there are some limitations to this on hardware
 * No async operations
 * Higher level instructions
 
