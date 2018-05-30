@@ -7,7 +7,7 @@
 
 #include <cstdint>
 
-typedef int16_t dac_t;
+typedef double dac_t;
 typedef uint8_t addr_t;
 
 
@@ -22,6 +22,7 @@ namespace SCAMP {
         WEST,
         IN,
         INV,
+        NEG,
         MOV,
         WHERE,
         NOT,

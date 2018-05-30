@@ -19,7 +19,7 @@ using namespace SCAMP;
 class Scamp {
 
 private:
-    const Sim* sim_ptr;
+    Sim* sim_ptr;
 
     const UMat A;
     const UMat B;
@@ -49,14 +49,14 @@ private:
     const UMat _DWORK;
 
 public:
-    Scamp(const Sim *simulator);
+    Scamp(Sim *simulator);
     const UMat &analog(areg_t a) const;
     const UMat &digital(dreg_t a) const;
 
     void make_global();
     void perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r3) const;
     void perform_operation_digital(opcode_t op, dreg_t r1, dreg_t r2, dreg_t r3) const;
-    void perform_operation_analog_io(opcode_t op, areg_t r, int a) const;
+    void perform_operation_analog_io(opcode_t op, areg_t r, double a) const;
     void perform_operation_digital_io(opcode_t op, dreg_t r, int a, int b, int c, int d) const;
 };
 
@@ -104,6 +104,9 @@ inline void inv(areg_t target, areg_t source) {
     scamp_ptr->perform_operation_analog(INV, target, source, (areg_t)0);
 }
 
+inline void neg(areg_t target, areg_t source) {
+    scamp_ptr->perform_operation_analog(NEG, target, source, (areg_t)0);
+}
 
 inline void d_nor(dreg_t target, dreg_t source) {
     scamp_ptr->perform_operation_digital(NOT, target, source, (dreg_t)0);

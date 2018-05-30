@@ -34,15 +34,15 @@ private:
 
 
 
-Scamp::Scamp(const Sim *simulator) :
-        A(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
-        B(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
-        C(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
-        D(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
-        E(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
-        F(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
-        NEWS(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
-        _AWORK(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
+Scamp::Scamp(Sim *simulator) :
+        A(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_32F)),
+        B(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_32F)),
+        C(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_32F)),
+        D(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_32F)),
+        E(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_32F)),
+        F(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_32F)),
+        NEWS(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_32F)),
+        _AWORK(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_32F)),
         R0(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
         R1(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
         R2(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
@@ -115,7 +115,7 @@ void Scamp::perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r
             int height = in_frame.rows;
             Mat cropFrame = in_frame(Rect((width-height)/2, 0, height-1, height-1));
             resize(cropFrame, cropFrame, cvSize(SCAMP_WIDTH, SCAMP_HEIGHT));
-            cropFrame.convertTo(target, CV_8S, 1, -128);
+            cropFrame.convertTo(target, CV_32F, 1./255, 0);
             break;
         }
         case ADD: {
@@ -176,12 +176,16 @@ void Scamp::perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r
             break;
         }
         case INV: {
-            bitwise_not(source1, target, FLAG);
+            subtract(1.0, source1, target, FLAG);
+            break;
+        }
+        case NEG: {
+            subtract(0.0, source1, target, FLAG);
             break;
         }
         case WHERE: {
-            threshold(source1, _AWORK, 0, 255, THRESH_BINARY);
-            _AWORK.convertTo(FLAG, CV_8U, 2, 1);
+            threshold(source1, _AWORK, 0.0, 1.0, THRESH_BINARY);
+            _AWORK.convertTo(FLAG, CV_8U, 255, 1);
             break;
         }
         default: {
@@ -189,8 +193,10 @@ void Scamp::perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r
             break;
         }
     }
+#ifdef SUPER_DEBUG
+    sim_ptr->update_ui();
+#endif
 }
-
 
 void Scamp::perform_operation_digital(opcode_t op, dreg_t r1, dreg_t r2, dreg_t r3) const {
     auto target = digital(r1);
@@ -265,13 +271,16 @@ void Scamp::perform_operation_digital(opcode_t op, dreg_t r1, dreg_t r2, dreg_t 
             break;
         }
     }
+#ifdef SUPER_DEBUG
+    sim_ptr->update_ui();
+#endif
 }
 
 
-void Scamp::perform_operation_analog_io(opcode_t op, areg_t r, int a) const {
+void Scamp::perform_operation_analog_io(opcode_t op, areg_t r, double a) const {
     switch(op) {
         case IN: {
-            UMat c(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S, a);
+            UMat c(SCAMP_HEIGHT, SCAMP_WIDTH, CV_32F, a);
             c.copyTo(analog(r), FLAG);
             break;
         }
@@ -280,6 +289,9 @@ void Scamp::perform_operation_analog_io(opcode_t op, areg_t r, int a) const {
             break;
         }
     }
+#ifdef SUPER_DEBUG
+    sim_ptr->update_ui();
+#endif
 }
 
 void Scamp::perform_operation_digital_io(opcode_t op, dreg_t r, int a, int b, int c, int d) const {
@@ -306,6 +318,9 @@ void Scamp::perform_operation_digital_io(opcode_t op, dreg_t r, int a, int b, in
             return;
         }
     }
+#ifdef SUPER_DEBUG
+    sim_ptr->update_ui();
+#endif
 }
 
 
