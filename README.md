@@ -53,3 +53,9 @@ cmake ..
 make
 ./cpa-sim
 ```
+
+## Setting the OpenCL device
+One can set the device to run the code on by setting th `OPENCV_OPENCL_DEVICE` Environment variable
+
+For example, to run on the first GPU of the system you could set the variable to
+`OPENCV_OPENCL_DEVICE=:GPU:`

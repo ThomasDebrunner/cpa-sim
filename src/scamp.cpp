@@ -118,6 +118,11 @@ void Scamp::perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r
             cropFrame.convertTo(target, CV_32F, 1./255, 0);
             break;
         }
+        case RES: {
+            UMat c(target.size(), target.type(), 0.00);
+            c.copyTo(target, FLAG);
+            break;
+        }
         case ADD: {
             add(source1, source2, target, FLAG);
             break;
@@ -184,7 +189,7 @@ void Scamp::perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r
             break;
         }
         case WHERE: {
-            threshold(source1, _AWORK, 0.0, 1.0, THRESH_BINARY);
+            threshold(target, _AWORK, 0.0, 1.0, THRESH_BINARY);
             _AWORK.convertTo(FLAG, CV_8U, 255, 1);
             break;
         }

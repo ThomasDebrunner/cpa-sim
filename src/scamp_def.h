@@ -14,6 +14,7 @@ typedef uint8_t addr_t;
 namespace SCAMP {
     typedef enum {
         RPIX,
+        RES,
         ADD,
         SUB,
         NORTH,

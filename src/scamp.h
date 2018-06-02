@@ -68,6 +68,10 @@ inline void rpix(areg_t target) {
     scamp_ptr->perform_operation_analog(RPIX, target, (areg_t)0, (areg_t)0);
 }
 
+inline void res(areg_t target) {
+    scamp_ptr->perform_operation_analog(RES, target, (areg_t)0, (areg_t)0);
+}
+
 inline void add(areg_t target, areg_t source1, areg_t source2) {
     scamp_ptr->perform_operation_analog(ADD, target, source1, source2);
 }

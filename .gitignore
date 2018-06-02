@@ -76,3 +76,5 @@ modules.xml
 ocv_stages
 cmake-build-super-debug
 .DS_Store
+data
+cmake-build-release

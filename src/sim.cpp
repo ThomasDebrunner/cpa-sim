@@ -9,6 +9,11 @@
 #include "opencv2/opencv.hpp"
 #include <chrono>
 
+// -- Grid layout definition for the window alignments
+#define TILE_WIDTH 256
+#define TILE_HEIGHT 280
+#define TILE_COUNT_H 2
+
 using namespace std;
 
 Sim::Sim() :
@@ -22,8 +27,8 @@ Sim::~Sim() {
 
 void Sim::start_ui () {
     for (int i=0; i<display_images.size(); i++) {
-        string window_name = "Output_" + to_string(i);
-        cv::namedWindow(window_name, cv::WINDOW_AUTOSIZE);
+        cv::namedWindow(window_names[i], cv::WINDOW_AUTOSIZE);
+        cv::moveWindow(window_names[i], i%TILE_COUNT_H*TILE_WIDTH, i/TILE_COUNT_H*TILE_HEIGHT);
     }
 }
 
@@ -42,8 +47,7 @@ void Sim::update_ui() {
             gpu_images[i].copyTo(display_images[i]);
         }
         for (int i=0; i<display_images.size(); i++) {
-            string window_name = "Output_" + to_string(i);
-            cv::imshow(window_name, display_images[i]);
+            cv::imshow(window_names[i], display_images[i]);
             cv::waitKey(1);
         }
     }
@@ -53,12 +57,21 @@ void Sim::source_camera() {
     cap = new cv::VideoCapture(0);
 }
 
+void Sim::source_video(const string& filename) {
+    cap = new cv::VideoCapture(filename);
+}
+
 const cv::Mat &Sim::get_frame() const {
     return frame;
 }
 
-window_ref_t Sim::add_window(const cv::UMat& reg) {
+void Sim::add_window(const cv::UMat& reg) {
+    add_window(reg, "Output_" + to_string(window_names.size()));
+}
+
+void Sim::add_window(const cv::UMat& reg, const string& name) {
     gpu_images.push_back(reg);
+    window_names.push_back(name);
     cv::Mat display_image(reg.size(), reg.type());
     {
         lock_guard<mutex> l(download_guard);
