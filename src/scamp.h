@@ -19,7 +19,7 @@ using namespace SCAMP;
 class Scamp {
 
 private:
-    const Sim* sim_ptr;
+    Sim* sim_ptr;
 
     const UMat A;
     const UMat B;
@@ -49,7 +49,7 @@ private:
     const UMat _DWORK;
 
 public:
-    Scamp(const Sim *simulator);
+    Scamp(Sim *simulator);
     const UMat &analog(areg_t a) const;
     const UMat &digital(dreg_t a) const;
 
@@ -66,6 +66,10 @@ extern Scamp *scamp_ptr;
 
 inline void rpix(areg_t target) {
     scamp_ptr->perform_operation_analog(RPIX, target, (areg_t)0, (areg_t)0);
+}
+
+inline void res(areg_t target) {
+    scamp_ptr->perform_operation_analog(RES, target, (areg_t)0, (areg_t)0);
 }
 
 inline void add(areg_t target, areg_t source1, areg_t source2) {

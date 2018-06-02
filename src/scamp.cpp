@@ -34,7 +34,7 @@ private:
 
 
 
-Scamp::Scamp(const Sim *simulator) :
+Scamp::Scamp(Sim *simulator) :
         A(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
         B(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
         C(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
@@ -118,6 +118,11 @@ void Scamp::perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r
             cropFrame.convertTo(target, CV_8S, 1, -128);
             break;
         }
+        case RES: {
+            UMat c(target.size(), target.type(), 0.00);
+            c.copyTo(target, FLAG);
+            break;
+        }
         case ADD: {
             add(source1, source2, target, FLAG);
             break;
@@ -180,7 +185,7 @@ void Scamp::perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r
             break;
         }
         case WHERE: {
-            threshold(source1, _AWORK, 0, 255, THRESH_BINARY);
+            threshold(target, _AWORK, 0, 255, THRESH_BINARY);
             _AWORK.convertTo(FLAG, CV_8U, 2, 1);
             break;
         }
@@ -189,6 +194,9 @@ void Scamp::perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r
             break;
         }
     }
+#ifdef SUPER_DEBUG
+    sim_ptr->update_ui();
+#endif
 }
 
 
@@ -265,6 +273,9 @@ void Scamp::perform_operation_digital(opcode_t op, dreg_t r1, dreg_t r2, dreg_t 
             break;
         }
     }
+#ifdef SUPER_DEBUG
+    sim_ptr->update_ui();
+#endif
 }
 
 
@@ -280,6 +291,9 @@ void Scamp::perform_operation_analog_io(opcode_t op, areg_t r, int a) const {
             break;
         }
     }
+#ifdef SUPER_DEBUG
+    sim_ptr->update_ui();
+#endif
 }
 
 void Scamp::perform_operation_digital_io(opcode_t op, dreg_t r, int a, int b, int c, int d) const {
@@ -306,6 +320,9 @@ void Scamp::perform_operation_digital_io(opcode_t op, dreg_t r, int a, int b, in
             return;
         }
     }
+#ifdef SUPER_DEBUG
+    sim_ptr->update_ui();
+#endif
 }
 
 

@@ -16,9 +16,8 @@ int main(){
 
     simulation.source_camera();
 
-    simulation.add_window(scamp.analog(A));
-    simulation.add_window(scamp.analog(B));
-
+    simulation.add_window(scamp.analog(A), "Capture (A)");
+    simulation.add_window(scamp.analog(B), "Out");
 
     simulation.start_ui();
 
@@ -31,15 +30,13 @@ int main(){
         int i_angle = 8;
         rpix(A);
         mov(B, A);
-        inv(B, B);
 
-//
-//		double scale_factor = i_scale / 100.;
-//        scale(B, scale_factor);
-//
-//
-//        double angle = 0.25*3.15*(i_angle/100.);
-//        rotate(B, angle);
+		double scale_factor = i_scale / 100.;
+        scale(B, scale_factor);
+
+
+        double angle = 0.25*3.15*(i_angle/100.);
+        rotate(B, angle);
 
 	}
 }

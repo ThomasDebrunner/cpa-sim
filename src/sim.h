@@ -13,7 +13,6 @@
 
 using namespace std;
 
-typedef int window_ref_t;
 
 class Sim {
 private:
@@ -21,6 +20,7 @@ private:
     cv::Mat frame;
     vector<const cv::UMat> gpu_images;
     vector<const cv::Mat> display_images;
+    vector<const string> window_names;
     chrono::time_point<chrono::high_resolution_clock> last_frame_download;
     mutex download_guard;
 
@@ -28,7 +28,9 @@ public:
     Sim();
     void acquire_frame();
     void source_camera();
-    window_ref_t add_window(const cv::UMat& reg);
+    void source_video(const string& filename);
+    void add_window(const cv::UMat& reg);
+    void add_window(const cv::UMat& reg, const string& name);
     void start_ui();
     void update_ui();
     const cv::Mat &get_frame() const;
