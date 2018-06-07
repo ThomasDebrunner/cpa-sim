@@ -8,6 +8,7 @@
 
 
 using namespace cv;
+using namespace std;
 Scamp * scamp_ptr = NULL;
 
 
@@ -119,12 +120,17 @@ void Scamp::perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r
             break;
         }
         case RES: {
-            UMat c(target.size(), target.type(), 0.00);
-            c.copyTo(target, FLAG);
+            UMat c = target;
+            c.setTo(0.00, FLAG);
             break;
         }
         case ADD: {
             add(source1, source2, target, FLAG);
+            break;
+        }
+        case ADDNEG: {
+            add(source1, source2, target, FLAG);
+            subtract(0.0, source1, target, FLAG);
             break;
         }
         case SUB: {
@@ -285,8 +291,8 @@ void Scamp::perform_operation_digital(opcode_t op, dreg_t r1, dreg_t r2, dreg_t 
 void Scamp::perform_operation_analog_io(opcode_t op, areg_t r, double a) const {
     switch(op) {
         case IN: {
-            UMat c(SCAMP_HEIGHT, SCAMP_WIDTH, CV_32F, a);
-            c.copyTo(analog(r), FLAG);
+            UMat c = analog(r);
+            c.setTo(a, FLAG);
             break;
         }
         default: {
@@ -300,10 +306,10 @@ void Scamp::perform_operation_analog_io(opcode_t op, areg_t r, double a) const {
 }
 
 void Scamp::perform_operation_digital_io(opcode_t op, dreg_t r, int a, int b, int c, int d) const {
-    switch(op) {
+    switch (op) {
         case IN: {
-            UMat temp(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U, a);
-            temp.copyTo(digital(r), FLAG);
+            UMat temp = digital(r);
+            temp.setTo(a, FLAG);
             break;
         }
         case SELECT_PATTERN: {
@@ -328,6 +334,41 @@ void Scamp::perform_operation_digital_io(opcode_t op, dreg_t r, int a, int b, in
 #endif
 }
 
+void Scamp::perform_operation_analog_transform(areg_t r1, areg_t r2, int x, int y, int s, bool n) const {
+    auto target = analog(r1);
+    auto source = analog(r2);
+    int ax = abs(x);
+    int ay = abs(y);
+    UMat dest = _AWORK;
+    dest.setTo(0.00, FLAG);
+    auto source_rect = Rect(x>0?ax:0, y<0?ay:0, SCAMP_WIDTH-ax, SCAMP_HEIGHT-ay);
+    auto target_rect = Rect(x<0?ax:0, y>0?ay:0, SCAMP_WIDTH-ax, SCAMP_HEIGHT-ay);
+    source(source_rect).copyTo(dest(target_rect), FLAG(target_rect));
 
+    if (s != 0) {
+        multiply(_AWORK, pow(2., -s), _AWORK);
+    }
 
+    if (n) {
+        subtract(0, _AWORK, _AWORK);
+    }
+    _AWORK.copyTo(target, FLAG);
+#ifdef SUPER_DEBUG
+        sim_ptr->update_ui();
+#endif
+}
 
+void Scamp::perform_operation_digital_transform(dreg_t r1, dreg_t r2, int x, int y) const {
+    auto target = digital(r1);
+    auto source = digital(r2);
+    int ax = abs(x);
+    int ay = abs(y);
+    UMat dest = _DWORK;
+    dest.setTo(0, FLAG);
+    auto source_rect = Rect(x>0?ax:0, y<0?ay:0, SCAMP_WIDTH-ax, SCAMP_HEIGHT-ay);
+    auto target_rect = Rect(x<0?ax:0, y>0?ay:0, SCAMP_WIDTH-ax, SCAMP_HEIGHT-ay);
+    source(source_rect).copyTo(dest(target_rect), FLAG(target_rect));
+#ifdef SUPER_DEBUG
+    sim_ptr->update_ui();
+#endif
+}

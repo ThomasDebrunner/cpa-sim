@@ -58,6 +58,9 @@ public:
     void perform_operation_digital(opcode_t op, dreg_t r1, dreg_t r2, dreg_t r3) const;
     void perform_operation_analog_io(opcode_t op, areg_t r, double a) const;
     void perform_operation_digital_io(opcode_t op, dreg_t r, int a, int b, int c, int d) const;
+
+    void perform_operation_analog_transform(areg_t r1, areg_t r2, int x, int y, int s, bool n) const;
+    void perform_operation_digital_transform(dreg_t r1, dreg_t r2, int x, int y) const;
 };
 
 
@@ -74,6 +77,10 @@ inline void res(areg_t target) {
 
 inline void add(areg_t target, areg_t source1, areg_t source2) {
     scamp_ptr->perform_operation_analog(ADD, target, source1, source2);
+}
+
+inline void addneg(areg_t target, areg_t source1, areg_t source2) {
+    scamp_ptr->perform_operation_analog(ADDNEG, target, source1, source2);
 }
 
 inline void sub(areg_t target, areg_t source1, areg_t source2) {
@@ -104,12 +111,12 @@ inline void div2(areg_t target, areg_t source) {
     scamp_ptr->perform_operation_analog(DIV2, target, source, (areg_t)0);
 }
 
-inline void inv(areg_t target, areg_t source) {
-    scamp_ptr->perform_operation_analog(INV, target, source, (areg_t)0);
-}
-
 inline void neg(areg_t target, areg_t source) {
     scamp_ptr->perform_operation_analog(NEG, target, source, (areg_t)0);
+}
+
+inline void inv(areg_t target, areg_t source) {
+    scamp_ptr->perform_operation_analog(INV, target, source, (areg_t)0);
 }
 
 inline void d_nor(dreg_t target, dreg_t source) {
@@ -166,6 +173,15 @@ inline void d_load(dreg_t target, bool value) {
     scamp_ptr->perform_operation_digital_io(IN, target, value?255:0, (dreg_t)0, (dreg_t)0, (dreg_t)0);
 }
 
+
+inline void _transform(areg_t target, areg_t source, int x_shift, int y_shift, int scale, bool inv) {
+    scamp_ptr->perform_operation_analog_transform(target, source, x_shift, y_shift, scale, inv);
+}
+
+
+inline void _d_transform(dreg_t target, dreg_t source, int x_shift, int y_shift) {
+    scamp_ptr->perform_operation_digital_transform(target, source, x_shift, y_shift);
+}
 
 
 #endif //CPA_SIM_CPA_H

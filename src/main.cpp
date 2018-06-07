@@ -38,7 +38,8 @@ int main(){
     Scamp scamp(&simulation);
     scamp.make_global();
 
-    simulation.source_video("../data/faces.mp4");
+    // simulation.source_video("../data/faces.mp4");
+    simulation.source_camera();
 
     simulation.add_window(scamp.analog(A), "Captured (A)");
     simulation.add_window(scamp.analog(B), "Evidence accumulator (B)");
