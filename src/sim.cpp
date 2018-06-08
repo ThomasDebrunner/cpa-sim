@@ -3,11 +3,15 @@
 //
 #include <iostream>
 #include "sim.h"
-#define MIN_PERIOD 32
+
 #include <mutex>
 #include <string>
 #include "opencv2/opencv.hpp"
 #include <chrono>
+
+
+#define MIN_PERIOD 32
+#define N_FPS_AVERAGE 10
 
 // -- Grid layout definition for the window alignments
 #define TILE_WIDTH 256
@@ -40,7 +44,12 @@ void Sim::acquire_frame() {
 }
 
 void Sim::update_ui() {
-    if (chrono::high_resolution_clock::now() - last_frame_download >= chrono::milliseconds(MIN_PERIOD)) {
+    auto current_time = chrono::high_resolution_clock::now();
+    long time_since_last_frame = chrono::duration_cast<chrono::milliseconds>(current_time - last_frame_invocation).count();
+    fps = fps * (N_FPS_AVERAGE-1)/N_FPS_AVERAGE + (1000./time_since_last_frame)/N_FPS_AVERAGE;
+    cout << fps << " fps\r";
+    last_frame_invocation = current_time;
+    if (current_time - last_frame_download >= chrono::milliseconds(MIN_PERIOD)) {
         lock_guard<mutex> l(download_guard);
         last_frame_download = chrono::high_resolution_clock::now();
         for (int i=0; i<gpu_images.size(); i++) {

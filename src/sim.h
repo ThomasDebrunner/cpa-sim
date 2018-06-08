@@ -22,6 +22,8 @@ private:
     vector<const cv::Mat> display_images;
     vector<const string> window_names;
     chrono::time_point<chrono::high_resolution_clock> last_frame_download;
+    chrono::time_point<chrono::high_resolution_clock> last_frame_invocation;
+    double fps;
     mutex download_guard;
 
 public:

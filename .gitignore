@@ -73,7 +73,7 @@ modules.xml
 
 # End of https://www.gitignore.io/api/clion+all
 ./build
-ocv_stages
+ocv_stages*
 cmake-build-super-debug
 .DS_Store
 data
