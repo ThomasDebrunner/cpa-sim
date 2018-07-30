@@ -70,18 +70,28 @@ void Scamp::make_global() {
 }
 
 
+ScampAccess Scamp::register_reference_analog(areg_t reg) {
+    ScampAccess f(analog(reg), false);
+    return f;
+}
+
+ScampAccess Scamp::register_reference_digital(dreg_t reg) {
+    ScampAccess f(digital(reg), true);
+    return f;
+}
+
+
 void Scamp::add_noise(const UMat& reg) const {
     // signal dependent noise
-    multiply(reg, Scalar(1.+SIGNAL_NON_LINEARITY), _AWORK);
-
-    _AWORK.copyTo(reg);
+    multiply(reg, Scalar(1.-SIGNAL_NON_LINEARITY), _AWORK);
 
     // fixed pattern noise
     add(_AWORK, FIXED_PATTERN_NOISE, reg, FLAG);
 
     // time dependent noise
     randn(_AWORK, Scalar(.0), GAUSSIAN_NOISE_STDDEV);
-    add(reg, _AWORK, reg, FLAG);
+    add(reg, _AWORK, NEWS, FLAG);
+    NEWS.copyTo(reg);
 }
 
 

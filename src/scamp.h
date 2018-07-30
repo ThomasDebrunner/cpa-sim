@@ -8,6 +8,7 @@
 #include "opencv2/opencv.hpp"
 #include "sim.h"
 #include "scamp_def.h"
+#include "scamp_access.h"
 
 #define SCAMP_WIDTH 256
 #define SCAMP_HEIGHT 256
@@ -56,14 +57,17 @@ private:
     const UMat FIXED_PATTERN_NOISE;
 
     void add_noise(const UMat& reg) const;
+    const UMat &analog(areg_t a) const;
+    const UMat &digital(dreg_t a) const;
 
 
 public:
     Scamp(Sim *simulator);
-    const UMat &analog(areg_t a) const;
-    const UMat &digital(dreg_t a) const;
 
     void make_global();
+    ScampAccess register_reference_analog(areg_t reg);
+    ScampAccess register_reference_digital(dreg_t reg);
+
     void perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r3) const;
     void perform_operation_digital(opcode_t op, dreg_t r1, dreg_t r2, dreg_t r3) const;
     void perform_operation_analog_io(opcode_t op, areg_t r, int a) const;

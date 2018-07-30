@@ -11,6 +11,13 @@ set(CMAKE_CXX_STANDARD 11)
 
 AUX_SOURCE_DIRECTORY(ocv_stages SOURCE_FILES)
 
-set(SOURCE_FILES ${SOURCE_FILES} src/scamp.h src/scamp.cpp src/scamp_def.h src/main.cpp src/sim.cpp src/sim.h src/demos/rot_scale.cpp src/demos/rot_scale.h)
+set(SOURCE_FILES ${SOURCE_FILES} src/scamp.h src/scamp.cpp
+        src/scamp_def.h
+        src/main.cpp src/sim.cpp
+        src/sim.h
+        src/demos/rot_scale.cpp
+        src/demos/rot_scale.h
+        src/scamp_access.cpp
+        src/scamp_access.h)
 add_executable(cpa-sim ${SOURCE_FILES})
 target_link_libraries( cpa-sim ${OpenCV_LIBS} )
