@@ -390,6 +390,13 @@ void Scamp::perform_operation_analog_transform(areg_t r1, areg_t r2, int x, int 
         subtract(0, _AWORK, _AWORK);
     }
     _AWORK.copyTo(target, FLAG);
+
+    int steps = abs(x)+abs(y)+abs(s)+n;
+    while (steps > 0) {
+        add_noise(target);
+        steps--;
+    }
+
 #ifdef SUPER_DEBUG
         sim_ptr->update_ui();
 #endif
