@@ -40,7 +40,9 @@ void Sim::acquire_frame() {
 }
 
 void Sim::update_ui() {
-    if (chrono::high_resolution_clock::now() - last_frame_download >= chrono::milliseconds(MIN_PERIOD)) {
+    auto time_since_last_frame = chrono::high_resolution_clock::now() - last_frame_download;
+    std::cout << (1e3/chrono::duration_cast<chrono::milliseconds>(time_since_last_frame).count()) << "fps\r";
+    if (time_since_last_frame >= chrono::milliseconds(MIN_PERIOD)) {
         lock_guard<mutex> l(download_guard);
         last_frame_download = chrono::high_resolution_clock::now();
         for (int i=0; i<gpu_images.size(); i++) {

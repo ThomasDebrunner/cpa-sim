@@ -36,14 +36,14 @@ private:
 
 
 Scamp::Scamp(Sim *simulator) :
-        A(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
-        B(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
-        C(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
-        D(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
-        E(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
-        F(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
-        NEWS(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
-        _AWORK(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8S)),
+        A(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_32F)),
+        B(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_32F)),
+        C(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_32F)),
+        D(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_32F)),
+        E(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_32F)),
+        F(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_32F)),
+        NEWS(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_32F)),
+        _AWORK(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_32F)),
         R0(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
         R1(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
         R2(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
@@ -58,13 +58,32 @@ Scamp::Scamp(Sim *simulator) :
         R11(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
         R12(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
         FLAG(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U, 255)),
-        _DWORK(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)) {
+        _DWORK(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)),
+        FIXED_PATTERN_NOISE(UMat(SCAMP_HEIGHT, SCAMP_WIDTH, CV_8U)) {
     sim_ptr = simulator;
+
+    randn(FIXED_PATTERN_NOISE, .0, PATTERN_NOISE_STDDEV);
 }
 
 void Scamp::make_global() {
     scamp_ptr = this;
 }
+
+
+void Scamp::add_noise(const UMat& reg) const {
+    // signal dependent noise
+    multiply(reg, Scalar(1.+SIGNAL_NON_LINEARITY), _AWORK);
+
+    _AWORK.copyTo(reg);
+
+    // fixed pattern noise
+    add(_AWORK, FIXED_PATTERN_NOISE, reg, FLAG);
+
+    // time dependent noise
+    randn(_AWORK, Scalar(.0), GAUSSIAN_NOISE_STDDEV);
+    add(reg, _AWORK, reg, FLAG);
+}
+
 
 const UMat &Scamp::analog(areg_t a) const {
     switch(a) {
@@ -116,7 +135,7 @@ void Scamp::perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r
             int height = in_frame.rows;
             Mat cropFrame = in_frame(Rect((width-height)/2, 0, height-1, height-1));
             resize(cropFrame, cropFrame, cvSize(SCAMP_WIDTH, SCAMP_HEIGHT));
-            cropFrame.convertTo(target, CV_8S, 1, -128);
+            cropFrame.convertTo(target, CV_32F, 1, -128);
             break;
         }
         case RES: {
@@ -126,19 +145,23 @@ void Scamp::perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r
         }
         case ADD: {
             add(source1, source2, target, FLAG);
+            add_noise(target);
             break;
         }
         case ADDNEG: {
             add(source1, source2, target, FLAG);
             bitwise_not(source1, target, FLAG);
+            add_noise(target);
             break;
         }
         case SUB: {
             subtract(source1, source2, target, FLAG);
+            add_noise(target);
             break;
         }
         case MOV: {
             source1.copyTo(target, FLAG);
+            add_noise(target);
             break;
         }
         case NORTH: {
@@ -149,6 +172,7 @@ void Scamp::perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r
             if (write_on_read) {
                 _AWORK.copyTo(target, FLAG);
             }
+            add_noise(target);
             break;
         }
         case EAST: {
@@ -159,6 +183,7 @@ void Scamp::perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r
             if (write_on_read) {
                 _AWORK.copyTo(target, FLAG);
             }
+            add_noise(target);
             break;
         }
         case SOUTH: {
@@ -169,6 +194,7 @@ void Scamp::perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r
             if (write_on_read) {
                 _AWORK.copyTo(target, FLAG);
             }
+            add_noise(target);
             break;
         }
         case WEST: {
@@ -179,16 +205,19 @@ void Scamp::perform_operation_analog(opcode_t op, areg_t r1, areg_t r2, areg_t r
             if (write_on_read) {
                 _AWORK.copyTo(target, FLAG);
             }
+            add_noise(target);
             break;
         }
         case DIV2: {
             multiply(source1, 0.5, _AWORK);
             _AWORK.copyTo(target, FLAG);
+            add_noise(target);
             break;
         }
         case NEG:
         case INV: {
             bitwise_not(source1, target, FLAG);
+            add_noise(target);
             break;
         }
         case WHERE: {

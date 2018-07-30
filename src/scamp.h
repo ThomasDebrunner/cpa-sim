@@ -12,6 +12,11 @@
 #define SCAMP_WIDTH 256
 #define SCAMP_HEIGHT 256
 
+// Error model
+#define SIGNAL_NON_LINEARITY 0.07
+#define GAUSSIAN_NOISE_STDDEV 0.09
+#define PATTERN_NOISE_STDDEV 0.05
+
 
 using namespace cv;
 using namespace SCAMP;
@@ -47,6 +52,11 @@ private:
     const UMat FLAG;
 
     const UMat _DWORK;
+
+    const UMat FIXED_PATTERN_NOISE;
+
+    void add_noise(const UMat& reg) const;
+
 
 public:
     Scamp(Sim *simulator);
