@@ -56,6 +56,7 @@ private:
 
     const UMat FIXED_PATTERN_NOISE;
 
+    bool noise_enabled = false;
     void add_noise(const UMat& reg) const;
     const UMat &analog(areg_t a) const;
     const UMat &digital(dreg_t a) const;
@@ -75,6 +76,9 @@ public:
 
     void perform_operation_analog_transform(areg_t r1, areg_t r2, int x, int y, int s, bool n) const;
     void perform_operation_digital_transform(dreg_t r1, dreg_t r2, int x, int y) const;
+
+    void enable_noise();
+    void disable_noise();
 };
 
 

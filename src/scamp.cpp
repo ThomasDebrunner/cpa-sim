@@ -81,7 +81,19 @@ ScampAccess Scamp::register_reference_digital(dreg_t reg) {
 }
 
 
+void Scamp::enable_noise() {
+    noise_enabled = true;
+}
+
+void Scamp::disable_noise() {
+    noise_enabled = false;
+}
+
+
 void Scamp::add_noise(const UMat& reg) const {
+    if (!noise_enabled) {
+        return;
+    }
     // signal dependent noise
     multiply(reg, Scalar(1.-SIGNAL_NON_LINEARITY), _AWORK);
 
